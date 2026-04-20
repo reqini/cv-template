@@ -2332,21 +2332,88 @@ body{font-family:'Open Sans',Arial,sans-serif;background:var(--bg);color:var(--t
 setTimeout(function(){var b=document.getElementById('wa-bubble');if(b)b.classList.add('visible');},2000);
 function setProgress(p){var f=document.getElementById('prog-fill');if(f)f.style.width=p+'%';}
 async function startExport(){
-  var btn=document.getElementById('export-btn'),bar=document.getElementById('export-bar'),prog=document.getElementById('prog-bar');
-  btn.disabled=true;btn.textContent='⏳ Preparando...';prog.classList.add('active');setProgress(10);
-  await new Promise(r=>setTimeout(r,600));setProgress(25);
-  bar.style.visibility='hidden';bar.style.position='absolute';bar.style.top='-9999px';
-  var cv=document.getElementById('cv');btn.textContent='⏳ Renderizando...';setProgress(40);
-  await new Promise(r=>setTimeout(r,200));
+  var btn=document.getElementById('export-btn');
+  var bar=document.getElementById('export-bar');
+  var prog=document.getElementById('prog-bar');
+  btn.disabled=true; btn.textContent='⏳ Preparando...';
+  prog.classList.add('active'); setProgress(8);
+
+  // Hide bar so it doesn't appear in capture
+  bar.style.visibility='hidden'; bar.style.position='absolute'; bar.style.top='-9999px';
+  // Also hide WA button
+  var wa=document.getElementById('wa-btn'); if(wa) wa.style.display='none';
+  var atsL=document.querySelector('.ats-layer'); if(atsL) atsL.style.display='none';
+
+  await new Promise(function(r){return setTimeout(r,150);});
+  setProgress(20);
+
+  var cv=document.getElementById('cv');
+  var CV_W=860;
+  var cvH=cv.scrollHeight||cv.offsetHeight||1200;
+
+  // Off-screen clone for reliable capture
+  var offDiv=document.createElement('div');
+  offDiv.style.cssText='position:fixed;top:0;left:-'+( CV_W+40)+'px;width:'+CV_W+'px;height:'+cvH+'px;overflow:visible;z-index:-1;background:#fff;pointer-events:none;';
+  var clone=cv.cloneNode(true);
+  clone.style.cssText='width:'+CV_W+'px;max-width:'+CV_W+'px;box-shadow:none;margin:0;background:#fff;';
+  var bd=clone.querySelector('.cv-body');
+  if(bd){bd.style.display='flex';bd.style.alignItems='flex-start';bd.style.width='100%';}
+  var mn=clone.querySelector('.cv-main'),sd=clone.querySelector('.cv-side');
+  if(mn){mn.style.display='block';mn.style.flex='1';mn.style.width='auto';}
+  if(sd){sd.style.display='block';sd.style.width='232px';sd.style.flexShrink='0';}
+  offDiv.appendChild(clone);
+  document.body.appendChild(offDiv);
+
+  await new Promise(function(r){return setTimeout(r,200);});
+  var realH=clone.scrollHeight||clone.offsetHeight||cvH;
+  offDiv.style.height=realH+'px';
+  setProgress(35); btn.textContent='⏳ Capturando...';
+
   try{
-    var canvas=await html2canvas(cv,{scale:2.8,useCORS:true,allowTaint:true,backgroundColor:'#ffffff',width:cv.offsetWidth,height:cv.scrollHeight,scrollX:0,scrollY:0,windowWidth:cv.offsetWidth,windowHeight:cv.scrollHeight,logging:false,imageTimeout:10000,onclone:function(d){d.querySelectorAll('*').forEach(function(el){el.style.webkitPrintColorAdjust='exact';el.style.printColorAdjust='exact';});var bd=d.querySelector('.cv-body');if(bd){bd.style.display='flex';bd.style.alignItems='flex-start';bd.style.width='100%';}var main=d.querySelector('.cv-main'),side=d.querySelector('.cv-side');if(main){main.style.display='block';main.style.flex='1';main.style.width='auto';}if(side){side.style.display='block';side.style.width='232px';side.style.flexShrink='0';}}});
-    setProgress(75);btn.textContent='⏳ Generando PDF...';await new Promise(r=>setTimeout(r,100));
-    var jsPDF=window.jspdf.jsPDF,A4W=210,A4H=297,pxM=canvas.width/A4W,totH=canvas.height/pxM,pages=Math.ceil(totH/A4H);
+    var canvas=await html2canvas(clone,{
+      scale:2.2,useCORS:true,allowTaint:true,backgroundColor:'#ffffff',
+      width:CV_W,height:realH,scrollX:0,scrollY:0,
+      windowWidth:CV_W,windowHeight:realH,
+      logging:false,imageTimeout:12000,foreignObjectRendering:false,
+      onclone:function(d){d.querySelectorAll('*').forEach(function(el){el.style.webkitPrintColorAdjust='exact';el.style.printColorAdjust='exact';});}
+    });
+    document.body.removeChild(offDiv);
+    setProgress(70); btn.textContent='⏳ Generando PDF...';
+    await new Promise(function(r){return setTimeout(r,60);});
+
+    var jsPDF=window.jspdf.jsPDF;
+    var A4W=210,A4H=297;
+    var pxM=canvas.width/A4W;
+    var totH=canvas.height/pxM;
+    var pages=Math.ceil(totH/A4H);
     var pdf=new jsPDF({unit:'mm',format:'a4',orientation:'portrait',compress:true});
-    for(var i=0;i<pages;i++){if(i>0)pdf.addPage();var srcY=i*A4H*pxM,srcH=Math.min(A4H*pxM,canvas.height-srcY),pc=document.createElement('canvas');pc.width=canvas.width;pc.height=Math.ceil(srcH);var ctx=pc.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,pc.width,pc.height);ctx.drawImage(canvas,0,srcY,canvas.width,srcH,0,0,canvas.width,srcH);var pi=pc.toDataURL('image/jpeg',0.94),rH=srcH/pxM;pdf.addImage(pi,'JPEG',0,0,A4W,rH,'','FAST');}
-    setProgress(95);await new Promise(r=>setTimeout(r,100));pdf.save('${set.pdfName||'MiCV.pdf'}');setProgress(100);
-  }catch(e){alert('Error: '+e.message);}
-  bar.style.visibility='';bar.style.position='';bar.style.top='';btn.innerHTML='↓ &nbsp;Exportar PDF';btn.disabled=false;
+    for(var i=0;i<pages;i++){
+      if(i>0) pdf.addPage();
+      var srcY=i*A4H*pxM;
+      var srcH=Math.min(A4H*pxM,canvas.height-srcY);
+      if(srcH<=0) break;
+      var pc=document.createElement('canvas');
+      pc.width=canvas.width; pc.height=Math.ceil(srcH);
+      var ctx=pc.getContext('2d');
+      ctx.fillStyle='#fff'; ctx.fillRect(0,0,pc.width,pc.height);
+      ctx.drawImage(canvas,0,srcY,canvas.width,srcH,0,0,canvas.width,srcH);
+      var pi=pc.toDataURL('image/jpeg',0.88);
+      pdf.addImage(pi,'JPEG',0,0,A4W,srcH/pxM,'p'+i,'FAST');
+    }
+    setProgress(95);
+    await new Promise(function(r){return setTimeout(r,80);});
+    pdf.save('${set.pdfName||'MiCV.pdf'}');
+    setProgress(100);
+  } catch(e){
+    if(document.getElementById('pdf-offscreen-clone')) document.body.removeChild(offDiv);
+    alert('Error al generar PDF: '+e.message);
+  }
+
+  // Restore hidden elements
+  bar.style.visibility=''; bar.style.position=''; bar.style.top='';
+  if(wa) wa.style.display='';
+  if(atsL) atsL.style.display='';
+  btn.innerHTML='↓ &nbsp;Exportar PDF'; btn.disabled=false;
   setTimeout(function(){prog.classList.remove('active');setProgress(0);},1200);
 }
 <\/script>
@@ -2370,51 +2437,186 @@ function linkedinIconRaw() { return `<svg viewBox="0 0 24 24" style="width:13px;
 function locationIconRaw() { return `<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:#c49ef0;flex-shrink:0"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/></svg>`; }
 
 // ══════════════════════════════════════
-// EXPORT PDF
+// EXPORT PDF  —  robust off-screen clone
 // ══════════════════════════════════════
 async function exportPDF() {
   collectFormData();
   renderCV();
-  const btn = document.getElementById('pdf-btn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Generando...';
 
-  await new Promise(r => setTimeout(r, 300));
+  const btn      = document.getElementById('pdf-btn');
+  const mobBtn   = document.getElementById('mtab-export'); // mobile tab
+  const fname    = (DATA.settings && DATA.settings.pdfName) || 'MiCV.pdf';
 
-  const cv = document.getElementById('cv');
+  // ── Show loading state ──
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Preparando...'; }
+  if (mobBtn) { mobBtn.querySelector('.mob-tab-icon').textContent = '⏳'; }
+
+  // ── Give the browser one frame to repaint ──
+  await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  await new Promise(r => setTimeout(r, 80));
+
   try {
-    const canvas = await html2canvas(cv, {
-      scale: 2.8, useCORS: true, allowTaint: true,
-      backgroundColor: '#ffffff', width: cv.offsetWidth, height: cv.scrollHeight,
-      scrollX: 0, scrollY: 0, windowWidth: cv.offsetWidth, windowHeight: cv.scrollHeight,
-      logging: false, imageTimeout: 10000,
-      onclone: (d) => {
-        d.querySelectorAll('*').forEach(el => { el.style.webkitPrintColorAdjust = 'exact'; el.style.printColorAdjust = 'exact'; });
-        const bd = d.querySelector('.cv-body'); if (bd) { bd.style.display='flex'; bd.style.alignItems='flex-start'; bd.style.width='100%'; }
-        const main = d.querySelector('.cv-main'), side = d.querySelector('.cv-side');
-        if (main) { main.style.display='block'; main.style.flex='1'; main.style.width='auto'; }
-        if (side) { side.style.display='block'; side.style.width='232px'; side.style.flexShrink='0'; }
+    // ── 1. Grab the CV element and measure it ──
+    const cvSrc = document.getElementById('cv');
+
+    // Force the preview wrapper visible temporarily so layout is computed
+    const wrapper = document.getElementById('preview-wrapper');
+    const frame   = document.getElementById('preview-frame');
+    const wasHidden  = !wrapper.classList.contains('visible') && !wrapper.classList.contains('mob-active');
+    const prevDisplay = wrapper.style.display;
+    const prevPos    = wrapper.style.position;
+
+    if (wasHidden) {
+      wrapper.style.position = 'absolute';
+      wrapper.style.top      = '-99999px';
+      wrapper.style.left     = '-99999px';
+      wrapper.style.display  = 'flex';
+      wrapper.style.width    = '900px';
+      wrapper.style.height   = '1200px';
+      wrapper.style.overflow = 'visible';
+    }
+    if (frame) {
+      frame.style.overflow = 'visible';
+      frame.style.height   = 'auto';
+    }
+
+    // Force layout
+    await new Promise(r => setTimeout(r, 120));
+
+    // ── 2. Create off-screen container with exact CV width ──
+    const CV_W    = 860; // fixed width matching CV max-width
+    const cvH     = cvSrc.scrollHeight || cvSrc.offsetHeight || 1200;
+    const offWrap = document.createElement('div');
+    offWrap.id    = 'pdf-offscreen';
+    offWrap.style.cssText = `
+      position:fixed; top:0; left:-${CV_W + 40}px;
+      width:${CV_W}px; height:${cvH}px;
+      overflow:visible; z-index:-1;
+      background:#fff; pointer-events:none;
+    `;
+
+    // Deep clone the CV into the off-screen wrapper
+    const cvClone = cvSrc.cloneNode(true);
+    cvClone.removeAttribute('id'); // avoid ID conflicts
+    cvClone.style.cssText = `
+      width:${CV_W}px; max-width:${CV_W}px;
+      box-shadow:none; margin:0; background:#fff;
+    `;
+
+    // Fix display:table columns in clone
+    const bodyEl = cvClone.querySelector('.cv-body');
+    if (bodyEl) {
+      bodyEl.style.display        = 'flex';
+      bodyEl.style.alignItems     = 'flex-start';
+      bodyEl.style.width          = '100%';
+    }
+    const mainEl = cvClone.querySelector('.cv-main');
+    const sideEl = cvClone.querySelector('.cv-side');
+    if (mainEl) { mainEl.style.display = 'block'; mainEl.style.flex = '1'; mainEl.style.width = 'auto'; mainEl.style.minWidth = '0'; }
+    if (sideEl) { sideEl.style.display = 'block'; sideEl.style.width = '232px'; sideEl.style.flexShrink = '0'; }
+
+    offWrap.appendChild(cvClone);
+    document.body.appendChild(offWrap);
+
+    // Wait for clone images to settle
+    await new Promise(r => setTimeout(r, 200));
+
+    // Measure real height from clone
+    const realH = cvClone.scrollHeight || cvClone.offsetHeight || cvH;
+    offWrap.style.height   = realH + 'px';
+    cvClone.style.height   = 'auto';
+
+    if (btn) btn.textContent = '⏳ Capturando...';
+
+    // ── 3. html2canvas on the clone ──
+    const canvas = await html2canvas(cvClone, {
+      scale          : 2.2,        // balanced quality vs file size
+      useCORS        : true,
+      allowTaint     : true,
+      backgroundColor: '#ffffff',
+      width          : CV_W,
+      height         : realH,
+      scrollX        : 0,
+      scrollY        : 0,
+      windowWidth    : CV_W,
+      windowHeight   : realH,
+      logging        : false,
+      imageTimeout   : 12000,
+      foreignObjectRendering: false, // more reliable cross-browser
+      onclone(doc, el) {
+        // Ensure all backgrounds and borders render
+        doc.querySelectorAll('*').forEach(n => {
+          n.style.webkitPrintColorAdjust = 'exact';
+          n.style.printColorAdjust       = 'exact';
+        });
       }
     });
-    const { jsPDF } = window.jspdf;
-    const A4W=210, A4H=297, pxM=canvas.width/A4W, totH=canvas.height/pxM, pages=Math.ceil(totH/A4H);
-    const pdf = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait', compress:true });
-    for (let i=0; i<pages; i++) {
-      if (i>0) pdf.addPage();
-      const srcY=i*A4H*pxM, srcH=Math.min(A4H*pxM,canvas.height-srcY);
-      const pc=document.createElement('canvas'); pc.width=canvas.width; pc.height=Math.ceil(srcH);
-      const ctx=pc.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,pc.width,pc.height);
-      ctx.drawImage(canvas,0,srcY,canvas.width,srcH,0,0,canvas.width,srcH);
-      const pi=pc.toDataURL('image/jpeg',0.94);
-      pdf.addImage(pi,'JPEG',0,0,A4W,srcH/pxM,'','FAST');
+
+    // ── 4. Cleanup off-screen elements ──
+    document.body.removeChild(offWrap);
+    if (wasHidden) {
+      wrapper.style.position = prevPos || '';
+      wrapper.style.top      = '';
+      wrapper.style.left     = '';
+      wrapper.style.display  = prevDisplay || '';
+      wrapper.style.width    = '';
+      wrapper.style.height   = '';
+      wrapper.style.overflow = '';
     }
-    const fname = (DATA.settings && DATA.settings.pdfName) || 'MiCV.pdf';
+    if (frame) {
+      frame.style.overflow = '';
+      frame.style.height   = '';
+    }
+
+    if (btn) btn.textContent = '⏳ Generando PDF...';
+    await new Promise(r => setTimeout(r, 60));
+
+    // ── 5. Build PDF — one page per A4 slice ──
+    const { jsPDF } = window.jspdf;
+    const A4W_MM   = 210;
+    const A4H_MM   = 297;
+    const pxPerMm  = canvas.width / A4W_MM;
+    const totalMm  = canvas.height / pxPerMm;
+    const pages    = Math.ceil(totalMm / A4H_MM);
+
+    const pdf = new jsPDF({
+      unit       : 'mm',
+      format     : 'a4',
+      orientation: 'portrait',
+      compress   : true
+    });
+
+    for (let i = 0; i < pages; i++) {
+      if (i > 0) pdf.addPage();
+
+      const srcY = i * A4H_MM * pxPerMm;
+      const srcH = Math.min(A4H_MM * pxPerMm, canvas.height - srcY);
+      if (srcH <= 0) break;
+
+      const pageCanvas      = document.createElement('canvas');
+      pageCanvas.width      = canvas.width;
+      pageCanvas.height     = Math.ceil(srcH);
+      const ctx             = pageCanvas.getContext('2d');
+      ctx.fillStyle         = '#ffffff';
+      ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+      ctx.drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+
+      // Quality 0.88 = good balance between sharpness and file size
+      const imgData = pageCanvas.toDataURL('image/jpeg', 0.88);
+      const renderH = srcH / pxPerMm;
+      pdf.addImage(imgData, 'JPEG', 0, 0, A4W_MM, renderH, `p${i}`, 'FAST');
+    }
+
     pdf.save(fname);
-  } catch(e) {
-    alert('Error al generar PDF: ' + e.message);
+
+  } catch (err) {
+    console.error('PDF export error:', err);
+    alert('Error al generar el PDF:\n' + err.message + '\n\nUsá Chrome o Edge actualizados.');
   }
-  btn.disabled = false;
-  btn.textContent = '↓ Exportar PDF';
+
+  // ── Restore buttons ──
+  if (btn) { btn.disabled = false; btn.textContent = '↓ Exportar PDF'; }
+  if (mobBtn) { mobBtn.querySelector('.mob-tab-icon').textContent = '⬇️'; }
 }
 
 // ══════════════════════════════════════

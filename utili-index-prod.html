@@ -539,6 +539,216 @@ body {
 @keyframes waPulse { 0%,100%{box-shadow:0 4px 20px rgba(37,211,102,0.5)} 50%{box-shadow:0 4px 32px rgba(37,211,102,0.8),0 0 0 10px rgba(37,211,102,0.1)} }
 #wa-close { position:absolute;top:6px;right:8px;font-size:15px;color:#bbb;cursor:pointer;line-height:1;pointer-events:auto;transition:color .15s; }
 #wa-close:hover { color:#666; }
+
+/* ═══════════════════════════════════════════
+   MOBILE FIRST  ≤ 768px
+   Lovable-style: bottom tab bar + slide panels
+═══════════════════════════════════════════ */
+
+/* Hide mobile tab bar on desktop by default */
+#mob-tabbar { display: none; }
+#mob-sidebar-close { display: none; }
+
+@media (max-width: 768px) {
+
+  body { overflow: hidden; }
+
+  /* ── TOP BAR mobile ── */
+  #top-bar {
+    padding: 8px 12px;
+    gap: 6px;
+    position: sticky; top: 0; z-index: 200;
+  }
+  .top-logo { font-size: 11px; }
+  #view-toggle { display: none; }
+  #save-indicator { display: none; }
+  #top-bar > div:last-child { gap: 5px; margin-left: auto; }
+  #top-bar .btn { padding: 6px 10px !important; font-size: 10px !important; width: auto !important; }
+
+  /* ── APP ── */
+  #app { height: 100dvh; height: 100vh; overflow: hidden; position: relative; }
+
+  /* ── MAIN LAYOUT ── */
+  #main-layout {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR: slide-in sheet from left ── */
+  #sidebar {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 86% !important;
+    max-width: 340px;
+    z-index: 300;
+    transform: translateX(-110%);
+    transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
+    border-right: none;
+    box-shadow: 4px 0 32px rgba(0,0,0,0.5);
+    border-radius: 0 16px 16px 0;
+  }
+  #sidebar.mob-open { transform: translateX(0); }
+
+  /* Sidebar overlay backdrop */
+  #mob-overlay {
+    display: none;
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 290;
+    backdrop-filter: blur(2px);
+  }
+  #mob-overlay.show { display: block; }
+
+  /* Sidebar close X */
+  #mob-sidebar-close {
+    display: flex;
+    position: absolute;
+    top: 12px; right: 12px;
+    width: 34px; height: 34px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid #2a2a4a;
+    border-radius: 8px;
+    color: #aaa; font-size: 16px;
+    align-items: center; justify-content: center;
+    cursor: pointer; z-index: 10;
+    transition: background 0.15s;
+  }
+  #mob-sidebar-close:hover { background: rgba(255,255,255,0.18); color:#fff; }
+
+  /* Nav tabs bigger touch targets */
+  #sidebar .sidebar-header { padding: 14px 16px 10px; }
+  #sidebar .nav-tab { padding: 13px 14px; font-size: 13.5px; border-radius: 10px; }
+  #sidebar .nav-tabs { padding: 10px 8px; gap: 3px; }
+  #sidebar .sidebar-actions { padding: 12px 12px 24px; gap: 10px; }
+  #sidebar .sidebar-actions .btn { padding: 13px; font-size: 13px; border-radius: 10px; }
+
+  /* ── EDITOR AREA: full screen panel ── */
+  #editor-area {
+    position: absolute;
+    inset: 0;
+    padding: 18px 14px 80px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    z-index: 100;
+    display: none;
+  }
+  #editor-area.mob-active { display: block; }
+
+  /* ── PREVIEW WRAPPER: full screen panel ── */
+  #preview-wrapper {
+    display: none !important;
+    position: absolute;
+    inset: 0;
+    z-index: 100;
+    border-left: none;
+    overflow: hidden;
+  }
+  #preview-wrapper.mob-active { display: flex !important; }
+  #preview-header { padding: 8px 14px; }
+  #preview-frame { padding-bottom: 72px; -webkit-overflow-scrolling: touch; }
+
+  /* ── BOTTOM TAB BAR ── */
+  #mob-tabbar {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    height: 60px;
+    background: #12122a;
+    border-top: 1px solid #252545;
+    align-items: stretch;
+    z-index: 400;
+    box-shadow: 0 -6px 30px rgba(0,0,0,0.45);
+    padding: 0 2px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .mob-tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #55558a;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: color 0.15s, background 0.15s;
+    padding: 5px 3px;
+    border-radius: 8px;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    margin: 4px 2px;
+  }
+  .mob-tab:active { background: rgba(116,20,204,0.15); }
+  .mob-tab.active { color: var(--pri); }
+  .mob-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px; left: 25%; right: 25%;
+    height: 2.5px;
+    background: var(--pri);
+    border-radius: 2px 2px 0 0;
+  }
+  .mob-tab-icon {
+    font-size: 19px;
+    line-height: 1;
+    transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .mob-tab.active .mob-tab-icon { transform: scale(1.2) translateY(-1px); }
+  .mob-tab-lbl { font-size: 8.5px; letter-spacing: 0.05em; }
+
+  /* ── FORMS: bigger touch targets ── */
+  .form-grid { grid-template-columns: 1fr; gap: 10px; }
+  .field input, .field textarea, .field select {
+    font-size: 16px; /* prevent iOS zoom */
+    padding: 11px 13px;
+  }
+  .item-card { padding: 14px; border-radius: 10px; }
+  .icon-btn { width: 38px; height: 38px; font-size: 15px; border-radius: 8px; }
+  .add-btn { padding: 13px; font-size: 12.5px; border-radius: 10px; }
+  .panel-title { font-size: 19px; }
+  .panel-sub { font-size: 12.5px; margin-bottom: 16px; }
+  .tag-chip { font-size: 12px; padding: 5px 12px; border-radius: 20px; }
+  .tag-chip button { font-size: 15px; }
+  .tag-input-row input { font-size: 16px; padding: 10px 12px; }
+  .tag-input-row button { padding: 10px 16px; font-size: 12.5px; }
+  .section-divider { font-size: 9.5px; padding: 12px 10px 5px; }
+
+  /* ── WA / GitHub alert above tab bar ── */
+  #wa-btn { bottom: 70px; right: 14px; }
+  #github-alert {
+    bottom: 68px;
+    max-width: calc(100% - 20px);
+    width: calc(100% - 20px);
+    left: 50%; transform: translateX(-50%);
+    font-size: 11.5px; padding: 9px 12px; gap: 8px;
+    border-radius: 10px;
+  }
+
+  /* ── CV preview: auto-scale to fit ── */
+  #preview-frame #cv {
+    transform-origin: top left;
+    width: 860px;
+  }
+  #preview-frame {
+    overflow-x: auto;
+    overflow-y: auto;
+  }
+}
+
+/* Extra tiny phones */
+@media (max-width: 360px) {
+  .mob-tab-lbl { display: none; }
+  .mob-tab-icon { font-size: 22px; }
+  #mob-tabbar { height: 52px; }
+}
 </style>
 </head>
 <body>
@@ -602,6 +812,61 @@ body {
   </div>
 </div>
 
+<!-- SEO OPTIMIZATION MODAL -->
+<div class="modal-overlay" id="seo-modal">
+  <div class="modal-box" style="max-width:560px">
+    <button class="modal-close" onclick="closeSeoModal()">✕</button>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+      <div style="font-size:28px">🔍</div>
+      <div>
+        <h2 style="margin-bottom:2px">SEO & AI Optimization</h2>
+        <p class="modal-sub" style="margin-bottom:0">Tu CV exportado está optimizado para motores de búsqueda e IA</p>
+      </div>
+    </div>
+
+    <!-- SEO SCORE RING -->
+    <div id="seo-score-block" style="display:flex;align-items:center;gap:20px;background:rgba(116,20,204,0.08);border:1px solid rgba(116,20,204,0.2);border-radius:12px;padding:16px 20px;margin:16px 0">
+      <div style="position:relative;width:72px;height:72px;flex-shrink:0">
+        <svg width="72" height="72" viewBox="0 0 72 72">
+          <circle cx="36" cy="36" r="30" fill="none" stroke="#2a2a4a" stroke-width="7"/>
+          <circle id="seo-ring" cx="36" cy="36" r="30" fill="none" stroke="#22c55e" stroke-width="7"
+            stroke-dasharray="188.5" stroke-dashoffset="188.5"
+            stroke-linecap="round" transform="rotate(-90 36 36)"
+            style="transition:stroke-dashoffset 1s ease,stroke 0.4s"/>
+        </svg>
+        <div id="seo-score-num" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-size:18px;font-weight:800;color:#fff">0</div>
+      </div>
+      <div>
+        <div id="seo-score-label" style="font-family:'Montserrat',sans-serif;font-size:13px;font-weight:800;color:#fff;margin-bottom:4px">Calculando…</div>
+        <div id="seo-score-sub" style="font-size:11.5px;color:#8888aa;line-height:1.5"></div>
+      </div>
+    </div>
+
+    <!-- CHECKLIST -->
+    <div id="seo-checklist" style="display:flex;flex-direction:column;gap:6px;margin-bottom:20px"></div>
+
+    <!-- WHAT'S INCLUDED -->
+    <div class="tip-box" style="margin-top:0">
+      <div style="font-family:'Montserrat',sans-serif;font-size:10px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;color:#fff">✨ Incluido en tu HTML exportado</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;font-size:11.5px;color:#c49ef0">
+        <div>✅ Meta title + description</div>
+        <div>✅ Open Graph (LinkedIn/FB)</div>
+        <div>✅ Twitter Card</div>
+        <div>✅ JSON-LD schema.org/Person</div>
+        <div>✅ Keywords meta tag</div>
+        <div>✅ ATS hidden keyword layer</div>
+        <div>✅ Canonical URL</div>
+        <div>✅ Accessibility (alt, lang)</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn btn-primary" style="flex:1" onclick="doExportHTML()">↓ Exportar HTML optimizado</button>
+      <button class="btn btn-secondary" style="width:auto;padding:10px 16px" onclick="closeSeoModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
 <!-- APP -->
 <div id="app">
   <!-- TOP BAR -->
@@ -615,14 +880,19 @@ body {
     <div id="save-indicator">✓ Guardado</div>
     <div style="margin-left:auto; display:flex; gap:8px;">
       <button class="btn btn-secondary" style="width:auto; padding:7px 14px; font-size:11px;" onclick="exportHTML()">↓ Exportar HTML</button>
+      <button class="btn btn-secondary" style="width:auto; padding:7px 10px; font-size:11px;" onclick="openSeoModal()" title="SEO & AI Score">🔍 SEO</button>
       <button class="btn btn-primary" style="width:auto; padding:7px 14px; font-size:11px;" onclick="exportPDF()" id="pdf-btn">↓ Exportar PDF</button>
     </div>
   </div>
 
   <div id="main-layout">
+    <!-- Mobile overlay backdrop -->
+    <div id="mob-overlay" onclick="closeMobSidebar()"></div>
+
     <!-- SIDEBAR -->
     <div id="sidebar">
       <div class="sidebar-header">
+        <button id="mob-sidebar-close" onclick="closeMobSidebar()" aria-label="Cerrar menú">✕</button>
         <h1>Panel de edición</h1>
         <p>Todos los cambios se guardan automáticamente</p>
       </div>
@@ -932,6 +1202,27 @@ body {
       </div>
     </div>
   </div>
+
+  <!-- MOBILE BOTTOM TAB BAR -->
+  <nav id="mob-tabbar" role="tablist">
+    <button class="mob-tab active" id="mtab-edit" onclick="mobSetTab('edit')" role="tab">
+      <span class="mob-tab-icon">✏️</span>
+      <span class="mob-tab-lbl">Editar</span>
+    </button>
+    <button class="mob-tab" id="mtab-menu" onclick="mobSetTab('menu')" role="tab">
+      <span class="mob-tab-icon">☰</span>
+      <span class="mob-tab-lbl">Secciones</span>
+    </button>
+    <button class="mob-tab" id="mtab-preview" onclick="mobSetTab('preview')" role="tab">
+      <span class="mob-tab-icon">👁️</span>
+      <span class="mob-tab-lbl">Preview</span>
+    </button>
+    <button class="mob-tab" id="mtab-export" onclick="exportPDF()" role="tab">
+      <span class="mob-tab-icon">⬇️</span>
+      <span class="mob-tab-lbl">PDF</span>
+    </button>
+  </nav>
+
 </div>
 
 <script>
@@ -1601,31 +1892,250 @@ function applyColors() {
 }
 
 // ══════════════════════════════════════
-// EXPORT HTML
+// SEO MODAL
 // ══════════════════════════════════════
-function exportHTML() {
+function openSeoModal() {
   collectFormData();
-  saveData();
+  document.getElementById('seo-modal').classList.add('open');
+  setTimeout(() => renderSeoScore(), 80); // slight delay for animation
+}
+function closeSeoModal() {
+  document.getElementById('seo-modal').classList.remove('open');
+}
+
+// Calculate SEO score 0-100 and render checklist
+function renderSeoScore() {
   const p = DATA.personal || {};
   const soc = DATA.social || {};
   const set = DATA.settings || {};
+
+  const checks = [
+    {
+      id: 'name',
+      label: 'Nombre completo',
+      ok: !!(p.name && p.name.trim().length > 2),
+      tip: 'Agregá tu nombre en "Perfil & Contacto"',
+      weight: 15
+    },
+    {
+      id: 'title',
+      label: 'Título / Rol profesional',
+      ok: !!(p.title && p.title.trim().length > 5),
+      tip: 'Agregá tu rol en "Perfil & Contacto"',
+      weight: 12
+    },
+    {
+      id: 'summary',
+      label: 'Descripción "Sobre mí" (≥80 chars)',
+      ok: !!(DATA.summary && DATA.summary.trim().length >= 80),
+      tip: 'Escribí al menos 80 caracteres en "Sobre mí"',
+      weight: 15
+    },
+    {
+      id: 'email',
+      label: 'Email de contacto',
+      ok: !!(p.email && p.email.includes('@')),
+      tip: 'Agregá tu email en "Perfil & Contacto"',
+      weight: 8
+    },
+    {
+      id: 'location',
+      label: 'Ubicación',
+      ok: !!(p.location && p.location.trim().length > 2),
+      tip: 'Agregá tu ciudad/país en "Perfil & Contacto"',
+      weight: 5
+    },
+    {
+      id: 'linkedin',
+      label: 'LinkedIn',
+      ok: !!(soc.linkedin && soc.linkedin.includes('linkedin')),
+      tip: 'Agregá tu LinkedIn en "Redes & Links"',
+      weight: 8
+    },
+    {
+      id: 'github',
+      label: 'GitHub / Portfolio',
+      ok: !!(soc.github && soc.github.startsWith('http')),
+      tip: 'Agregá tu GitHub en "Redes & Links"',
+      weight: 5
+    },
+    {
+      id: 'skills',
+      label: 'Skills (≥5)',
+      ok: (DATA.skills || []).length >= 5,
+      tip: 'Agregá al menos 5 skills en "Skills"',
+      weight: 10
+    },
+    {
+      id: 'tools',
+      label: 'Herramientas (≥3)',
+      ok: (DATA.tools || []).length >= 3,
+      tip: 'Agregá herramientas en "Tools & Tech"',
+      weight: 7
+    },
+    {
+      id: 'experience',
+      label: 'Experiencia laboral (≥1)',
+      ok: (DATA.experience || []).length >= 1,
+      tip: 'Agregá al menos una experiencia',
+      weight: 10
+    },
+    {
+      id: 'pagetitle',
+      label: 'Título SEO personalizado',
+      ok: !!(set.pageTitle && set.pageTitle.trim().length > 5),
+      tip: 'Completá el "Título SEO" en Ajustes',
+      weight: 5
+    },
+  ];
+
+  const totalWeight = checks.reduce((s, c) => s + c.weight, 0);
+  const earnedWeight = checks.filter(c => c.ok).reduce((s, c) => s + c.weight, 0);
+  const score = Math.round((earnedWeight / totalWeight) * 100);
+
+  // Animate ring
+  const ring = document.getElementById('seo-ring');
+  const circumference = 188.5;
+  const offset = circumference - (score / 100) * circumference;
+  ring.style.strokeDashoffset = offset;
+
+  // Color by score
+  const color = score >= 80 ? '#22c55e' : score >= 50 ? '#f59e0b' : '#ef4444';
+  ring.style.stroke = color;
+
+  document.getElementById('seo-score-num').textContent = score;
+  document.getElementById('seo-score-num').style.color = color;
+
+  const labels = {
+    label: score >= 80 ? '🏆 Excelente — Listo para publicar' : score >= 60 ? '👍 Bueno — Algunas mejoras posibles' : score >= 40 ? '⚠️ Regular — Completá los campos clave' : '❌ Bajo — Falta información importante',
+    sub: score >= 80 ? 'Tu CV está muy bien optimizado para Google, LinkedIn e IA' : `Completá los checks en rojo para mejorar tu visibilidad`
+  };
+  document.getElementById('seo-score-label').textContent = labels.label;
+  document.getElementById('seo-score-sub').textContent = labels.sub;
+
+  // Render checklist
+  const list = document.getElementById('seo-checklist');
+  list.innerHTML = checks.map(c => `
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;background:rgba(255,255,255,0.03);border:1px solid ${c.ok ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'}">
+      <span style="font-size:15px;flex-shrink:0">${c.ok ? '✅' : '❌'}</span>
+      <span style="flex:1;font-size:12px;color:${c.ok ? '#86efac' : '#fca5a5'};font-weight:600">${c.label}</span>
+      ${!c.ok ? `<span style="font-size:10.5px;color:#6666aa;font-style:italic">${c.tip}</span>` : `<span style="font-size:10px;color:#22c55e;font-family:'Montserrat',sans-serif;font-weight:700">+${c.weight}pts</span>`}
+    </div>`).join('');
+}
+
+// ── Build all SEO meta tags from DATA ──
+function buildSeoMeta() {
+  const p  = DATA.personal  || {};
+  const soc = DATA.social   || {};
+  const set = DATA.settings || {};
+
+  const name      = p.name  || '';
+  const title     = p.title || '';
+  const location  = p.location || '';
+  const summary   = (DATA.summary || '').replace(/\n/g,' ').trim();
+  const skills    = (DATA.skills  || []).join(', ');
+  const tools     = (DATA.tools   || []).join(', ');
+  const allRoles  = (DATA.experience || []).map(e => e.role).filter(Boolean).join(', ');
+  const companies = (DATA.experience || []).map(e => e.company).filter(Boolean).join(', ');
+  const langs     = (DATA.languages || []).join(', ');
+
+  const pageTitle = set.pageTitle || `${name} | ${title}`;
+  const desc = summary.length > 20
+    ? summary.substring(0, 160)
+    : `${name} — ${title}. ${skills ? 'Especialista en ' + skills.split(',').slice(0,4).join(', ') + '.' : ''} ${location ? 'Basado en ' + location + '.' : ''}`.trim();
+  const keywords = [name, title, location, ...( DATA.skills||[]), ...(DATA.tools||[]),
+    ...(DATA.experience||[]).map(e=>e.role), ...(DATA.experience||[]).map(e=>e.company),
+    ...(DATA.languages||[])
+  ].filter(Boolean).join(', ');
+
+  const canonical = soc.github || soc.linkedin || '';
+  const avatar    = p.avatar  || '';
+
+  // JSON-LD Person schema
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name,
+    jobTitle: title,
+    description: desc,
+    ...(p.email    ? { email: p.email }       : {}),
+    ...(p.phone    ? { telephone: p.phone }   : {}),
+    ...(p.website  ? { url: p.website }       : {}),
+    ...(avatar     ? { image: avatar }        : {}),
+    ...(location   ? { address: { '@type': 'PostalAddress', addressLocality: location } } : {}),
+    ...(soc.linkedin ? { sameAs: [soc.linkedin, soc.github].filter(Boolean) } : {}),
+    knowsAbout: [...(DATA.skills||[]), ...(DATA.tools||[])].filter(Boolean),
+    ...(DATA.languages&&DATA.languages.length ? { knowsLanguage: DATA.languages } : {}),
+    worksFor: DATA.experience&&DATA.experience[0] ? {
+      '@type': 'Organization',
+      name: DATA.experience[0].company || ''
+    } : undefined,
+    hasOccupation: DATA.experience ? DATA.experience.slice(0,3).map(e => ({
+      '@type': 'Occupation',
+      name: e.role,
+      hiringOrganization: { '@type': 'Organization', name: e.company }
+    })) : undefined,
+    alumniOf: (DATA.education||[]).map(e => ({ '@type': 'EducationalOrganization', name: e.institution }))
+  };
+  // Remove undefined keys
+  Object.keys(jsonLd).forEach(k => jsonLd[k] === undefined && delete jsonLd[k]);
+
+  // ATS hidden keyword block (invisible to humans, parseable by bots)
+  const atsKeywords = [
+    name, title, location,
+    ...(DATA.skills||[]),
+    ...(DATA.tools||[]),
+    ...(DATA.experience||[]).flatMap(e=>[e.role, e.company, ...(e.tags||[])]),
+    ...(DATA.languages||[]),
+    'CV', 'Resume', 'Curriculum Vitae', 'Portfolio', 'Hire', 'Job', 'Work',
+    'Remote', 'Freelance', 'Full-time', 'Designer', 'Developer', 'Engineer'
+  ].filter(Boolean).join(' · ');
+
+  return { pageTitle, desc, keywords, canonical, avatar, jsonLd, atsKeywords, name };
+}
+
+// ══════════════════════════════════════
+// EXPORT HTML  (SEO-powered)
+// ══════════════════════════════════════
+function exportHTML() {
+  // Show SEO modal first, actual export triggered by modal button
+  openSeoModal();
+}
+
+function doExportHTML() {
+  closeSeoModal();
+  collectFormData();
+  saveData();
+  _performExportHTML();
+}
+
+function _performExportHTML() {
+  const p   = DATA.personal  || {};
+  const soc = DATA.social    || {};
+  const set = DATA.settings  || {};
+  const seo = buildSeoMeta();
 
   const expHtml = (DATA.experience || []).map(exp => {
     const initials = (exp.company||'XX').substring(0,2).toUpperCase();
     const logoHtml = exp.logo
       ? `<div class="logo-box" id="lb-${exp.id}"><img src="${exp.logo}" alt="${exp.company}" onerror="this.parentElement.classList.add('fb');this.parentElement.textContent='${initials}'"></div>`
       : `<div class="logo-box fb">${initials}</div>`;
-    return `<div class="job">
+    return `<article class="job" itemscope itemtype="https://schema.org/WorkExperience">
   <div class="job-hdr-tbl"><div class="job-hdr-left"><div class="logo-row">${logoHtml}<div>
-  <div class="job-role">${exp.role}</div><div class="job-co">${exp.company}</div></div></div></div>
-  <div class="job-hdr-right"><span class="job-date">${exp.date}</span></div></div>
-  ${exp.desc ? `<p class="job-desc">${exp.desc}</p>` : ''}
+  <div class="job-role" itemprop="roleName">${exp.role}</div><div class="job-co" itemprop="hiringOrganization">${exp.company}</div></div></div></div>
+  <div class="job-hdr-right"><span class="job-date" itemprop="startDate">${exp.date}</span></div></div>
+  ${exp.desc ? `<p class="job-desc" itemprop="description">${exp.desc}</p>` : ''}
   ${(exp.bullets||[]).length ? `<ul class="job-ul">${(exp.bullets||[]).map(b=>`<li>${b}</li>`).join('')}</ul>` : ''}
-  ${(exp.tags||[]).length ? `<div class="tags">${(exp.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div>` : ''}
-</div>`;
+  ${(exp.tags||[]).length ? `<div class="tags" aria-label="Skills">${(exp.tags||[]).map(t=>`<span class="tag">${t}</span>`).join('')}</div>` : ''}
+</article>`;
   }).join('');
 
-  const eduHtml = (DATA.education || []).map(e => `<div class="edu-item"><div class="edu-name">${e.institution}</div><div class="edu-deg">${e.degree}</div><div class="edu-yr">${e.year}</div></div>`).join('');
+  const eduHtml = (DATA.education || []).map(e =>
+    `<div class="edu-item" itemscope itemtype="https://schema.org/EducationalOrganization">
+      <div class="edu-name" itemprop="name">${e.institution}</div>
+      <div class="edu-deg" itemprop="description">${e.degree}</div>
+      <div class="edu-yr">${e.year}</div>
+    </div>`).join('');
 
   const certHtml = (DATA.certifications||[]).length > 0 ? `
   <div class="side-sec">
@@ -1634,29 +2144,62 @@ function exportHTML() {
   </div>` : '';
 
   const contacts = [];
-  if (p.email) contacts.push(`<a class="hdr-contact" href="mailto:${p.email}">${emailIconRaw()}${p.email}</a>`);
-  if (p.phone) contacts.push(`<a class="hdr-contact" href="tel:${p.phone.replace(/\s/g,'')}">${phoneIconRaw()}${p.phone}</a>`);
-  if (soc.github) contacts.push(`<a class="hdr-contact" href="${soc.github}" target="_blank" rel="noopener">${githubIconRaw()}${soc.github.replace('https://','')}</a>`);
-  if (soc.linkedin) contacts.push(`<a class="hdr-contact" href="${soc.linkedin}" target="_blank" rel="noopener">${linkedinIconRaw()}LinkedIn</a>`);
-  if (p.location) contacts.push(`<a class="hdr-contact" href="#">${locationIconRaw()}${p.location}</a>`);
+  if (p.email)    contacts.push(`<a class="hdr-contact" href="mailto:${p.email}" itemprop="email">${emailIconRaw()}${p.email}</a>`);
+  if (p.phone)    contacts.push(`<a class="hdr-contact" href="tel:${p.phone.replace(/\s/g,'')}" itemprop="telephone">${phoneIconRaw()}${p.phone}</a>`);
+  if (soc.github)  contacts.push(`<a class="hdr-contact" href="${soc.github}" target="_blank" rel="noopener me">${githubIconRaw()}${soc.github.replace('https://','')}</a>`);
+  if (soc.linkedin) contacts.push(`<a class="hdr-contact" href="${soc.linkedin}" target="_blank" rel="noopener me">${linkedinIconRaw()}LinkedIn</a>`);
+  if (soc.behance)  contacts.push(`<a class="hdr-contact" href="${soc.behance}" target="_blank" rel="noopener">🎨 Behance</a>`);
+  if (soc.dribbble) contacts.push(`<a class="hdr-contact" href="${soc.dribbble}" target="_blank" rel="noopener">🏀 Dribbble</a>`);
+  if (p.location)  contacts.push(`<span class="hdr-contact" itemprop="address">${locationIconRaw()}${p.location}</span>`);
 
-  const waMsg = encodeURIComponent(p.wamsg || 'Hola!');
+  const waMsg  = encodeURIComponent(p.wamsg || 'Hola!');
   const waHref = p.whatsapp ? `https://wa.me/${p.whatsapp}?text=${waMsg}` : '#';
-  const pri = set.colorPri || '#7414CC';
-  const hdrColor = set.colorHdr || '#2a2a2a';
+  const pri    = set.colorPri || '#7414CC';
+  const hdrCol = set.colorHdr || '#2a2a2a';
 
   const html = `<!DOCTYPE html>
-<html lang="es">
+<html lang="es" itemscope itemtype="https://schema.org/Person">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${set.pageTitle || p.name + ' | ' + p.title}</title>
-<meta name="author" content="${p.name}">
+
+<!-- ═══ SEO PRIMARIO ═══ -->
+<title>${seo.pageTitle}</title>
+<meta name="description" content="${seo.desc.replace(/"/g,"'")}">
+<meta name="keywords" content="${seo.keywords.replace(/"/g,"'")}">
+<meta name="author" content="${seo.name}">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+<meta name="theme-color" content="${pri}">
+${seo.canonical ? `<link rel="canonical" href="${seo.canonical}">` : ''}
+
+<!-- ═══ OPEN GRAPH (LinkedIn, Facebook, WhatsApp) ═══ -->
+<meta property="og:type" content="profile">
+<meta property="og:title" content="${seo.pageTitle.replace(/"/g,"'")}">
+<meta property="og:description" content="${seo.desc.replace(/"/g,"'")}">
+${seo.canonical ? `<meta property="og:url" content="${seo.canonical}">` : ''}
+${seo.avatar ? `<meta property="og:image" content="${seo.avatar}">` : ''}
+<meta property="og:locale" content="es_AR">
+<meta property="og:site_name" content="${seo.name} — CV">
+${p.name ? `<meta property="profile:username" content="${p.name.replace(/\s+/g,'').toLowerCase()}">` : ''}
+
+<!-- ═══ TWITTER / X CARD ═══ -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="${seo.pageTitle.replace(/"/g,"'")}">
+<meta name="twitter:description" content="${seo.desc.replace(/"/g,"'")}">
+${seo.avatar ? `<meta name="twitter:image" content="${seo.avatar}">` : ''}
+
+<!-- ═══ JSON-LD STRUCTURED DATA ═══ -->
+<script type="application/ld+json">
+${JSON.stringify(seo.jsonLd, null, 2)}
+<\/script>
+
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
-:root{--pri:${pri};--pri-l:#9b4de0;--pri-xl:#f0e6fa;--pri-xxl:#faf5ff;--sec:#333;--white:#fff;--bg:#f6f3fb;--txt:#2d2d2d;--txt-l:#5f5f7a;--brd:#e2d5f5;--tag-bg:#ede4f9;--side-bg:#faf7fd;--hdr-bg:${hdrColor};}
+:root{--pri:${pri};--pri-l:#9b4de0;--pri-xl:#f0e6fa;--pri-xxl:#faf5ff;--sec:#333;--white:#fff;--bg:#f6f3fb;--txt:#2d2d2d;--txt-l:#5f5f7a;--brd:#e2d5f5;--tag-bg:#ede4f9;--side-bg:#faf7fd;--hdr-bg:${hdrCol};}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Open Sans',Arial,sans-serif;background:var(--bg);color:var(--txt);font-size:13px;line-height:1.6;-webkit-font-smoothing:antialiased;}
+/* ATS hidden layer */
+.ats-layer{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;font-size:1px;color:transparent;pointer-events:none;user-select:none;}
 #export-bar{background:#333;padding:9px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px;position:sticky;top:0;z-index:999;border-bottom:3px solid var(--pri);box-shadow:0 2px 12px rgba(0,0,0,0.3);}
 #export-bar .bar-left{color:#999;font-family:'Montserrat',sans-serif;font-size:11px;letter-spacing:.06em;display:flex;align-items:center;gap:10px;}
 #export-bar .bar-left span{color:#fff;font-weight:600;}
@@ -1720,35 +2263,43 @@ body{font-family:'Open Sans',Arial,sans-serif;background:var(--bg);color:var(--t
 #wa-circle{width:58px;height:58px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(37,211,102,.5);pointer-events:auto;text-decoration:none;animation:waPulse 2.5s ease-in-out infinite;}
 #wa-circle svg{width:32px;height:32px;fill:#fff;}
 @keyframes waPulse{0%,100%{box-shadow:0 4px 20px rgba(37,211,102,.5)}50%{box-shadow:0 4px 32px rgba(37,211,102,.8),0 0 0 10px rgba(37,211,102,.1)}}
-@media print{#export-bar,#wa-btn{display:none!important}body{background:#fff}#cv{box-shadow:none}.job{page-break-inside:avoid}}
-@media(max-width:640px){.cv-body{display:block}.cv-main{display:block;width:100%;padding:22px 16px 26px;border-right:none;border-bottom:1px solid var(--brd)}.cv-side{display:block;width:100%;padding:22px 16px 26px}}
+@media print{#export-bar,#wa-btn,.ats-layer{display:none!important}body{background:#fff}#cv{box-shadow:none}.job{page-break-inside:avoid}}
+@media(max-width:640px){.cv-body{display:block}.cv-main,.cv-side{display:block;width:100%;padding:20px 16px}.cv-main{border-right:none;border-bottom:1px solid var(--brd)}.cv-hdr{flex-direction:column;align-items:center;text-align:center}.hdr-contacts{justify-content:center}}
 </style>
 </head>
 <body>
+
+<!-- ATS HIDDEN KEYWORD LAYER — parseable by bots, invisible to humans -->
+<div class="ats-layer" aria-hidden="true" role="presentation">${seo.atsKeywords}</div>
+
 <div id="export-bar">
   <div class="bar-left">📄 <span>${p.name || 'Mi CV'}</span> — CV generado con CV Studio</div>
   <div class="progress-bar" id="prog-bar"><div class="progress-fill" id="prog-fill"></div></div>
   <button id="export-btn" onclick="startExport()">↓ &nbsp;Exportar PDF</button>
 </div>
-<div id="cv">
-  <div class="cv-hdr">
-    <div class="avatar"><img src="${p.avatar||''}" alt="${p.name||''}" onerror="this.style.display='none'"></div>
-    <div class="hdr-info">
-      <div class="hdr-name">${p.name||''}</div>
-      <div class="hdr-title">${p.title||''}</div>
-      <div class="hdr-contacts">${contacts.join('')}</div>
+<main id="cv" role="main" itemscope itemtype="https://schema.org/Person">
+  <header class="cv-hdr">
+    <div class="avatar">
+      <img src="${p.avatar||''}" alt="${p.name ? p.name + ' — foto de perfil' : 'foto de perfil'}" itemprop="image" ${!p.avatar ? 'style="display:none"' : ''}>
     </div>
-  </div>
+    <div class="hdr-info">
+      <h1 class="hdr-name" itemprop="name">${p.name||''}</h1>
+      <div class="hdr-title" itemprop="jobTitle">${p.title||''}</div>
+      <nav class="hdr-contacts" aria-label="Datos de contacto">${contacts.join('')}</nav>
+    </div>
+  </header>
   <div class="cv-body">
     <div class="cv-main">
-      <div class="sec-gap">
+      <section class="sec-gap" aria-label="Sobre mí">
         <div class="sec-ttl"><svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>Sobre mí — Summary</div>
-        <div class="sobre-mi">${(DATA.summary||'').split('\n').filter(l=>l.trim()).map(l=>`<p>${l}</p>`).join('')}</div>
-      </div>
-      <div class="sec-ttl"><svg viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.34C18 2.54 15.54 1 13 1c-1.32 0-2.6.5-3.54 1.46L8 4H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/></svg>Work Experience — Experiencia Laboral</div>
-      ${expHtml}
+        <div class="sobre-mi" itemprop="description">${(DATA.summary||'').split('\n').filter(l=>l.trim()).map(l=>`<p>${l}</p>`).join('')}</div>
+      </section>
+      <section aria-label="Experiencia Laboral">
+        <div class="sec-ttl"><svg viewBox="0 0 24 24"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.34C18 2.54 15.54 1 13 1c-1.32 0-2.6.5-3.54 1.46L8 4H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2z"/></svg>Work Experience — Experiencia Laboral</div>
+        ${expHtml}
+      </section>
     </div>
-    <div class="cv-side">
+    <aside class="cv-side" aria-label="Información complementaria">
       <div class="side-sec">
         <div class="sec-ttl"><svg viewBox="0 0 24 24"><path d="M12 3L1 9l4 2.18V15c0 3 3.1 6 7 6s7-3 7-6v-3.82L22 9 12 3zm6.18 6L12 12.72 5.82 9 12 5.28 18.18 9zM17 15c0 2.21-2.24 4-5 4s-5-1.79-5-4v-2.27l5 2.73 5-2.73V15z"/></svg>Education</div>
         ${eduHtml}
@@ -1756,22 +2307,22 @@ body{font-family:'Open Sans',Arial,sans-serif;background:var(--bg);color:var(--t
       ${certHtml}
       <div class="side-sec">
         <div class="sec-ttl"><svg viewBox="0 0 24 24"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>Tools &amp; Tech</div>
-        <div class="sk-wrap">${(DATA.tools||[]).map(t=>`<span class="sk-tag">${t}</span>`).join('')}</div>
+        <div class="sk-wrap" aria-label="Herramientas">${(DATA.tools||[]).map(t=>`<span class="sk-tag">${t}</span>`).join('')}</div>
       </div>
       <div class="side-sec">
         <div class="sec-ttl"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Skills</div>
-        <div class="sk-wrap">${(DATA.skills||[]).map(s=>`<span class="sk-tag">${s}</span>`).join('')}</div>
+        <div class="sk-wrap" aria-label="Skills">${(DATA.skills||[]).map(s=>`<span class="sk-tag" itemprop="knowsAbout">${s}</span>`).join('')}</div>
       </div>
       <div class="side-sec">
         <div class="sec-ttl"><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2z"/></svg>Languages</div>
         <div class="sk-wrap">${(DATA.languages||[]).map(l=>`<span class="sk-tag">${l}</span>`).join('')}</div>
       </div>
-    </div>
+    </aside>
   </div>
-</div>
+</main>
 <div id="wa-btn">
   <div id="wa-bubble"><span id="wa-close" onclick="this.parentElement.style.display='none'">✕</span>👋 <strong>¡Hola!</strong> Estoy disponible para nuevas oportunidades. <strong>Escribime por WhatsApp!</strong> 🚀</div>
-  <a id="wa-circle" href="${waHref}" target="_blank" rel="noopener">
+  <a id="wa-circle" href="${waHref}" target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">
     <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
   </a>
 </div>
@@ -1803,13 +2354,14 @@ async function startExport(){
 </html>`;
 
   const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
   a.download = 'index.html';
   a.click();
   URL.revokeObjectURL(url);
 }
+
 
 function emailIconRaw() { return `<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:#c49ef0;flex-shrink:0"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/></svg>`; }
 function phoneIconRaw() { return `<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:#c49ef0;flex-shrink:0"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1-9.4 0-17-7.6-17-17 0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1L6.6 10.8z"/></svg>`; }
@@ -1886,12 +2438,112 @@ function closeWA() {
 // ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
+// ══════════════════════════════════════
+// MOBILE TAB BAR LOGIC
+// ══════════════════════════════════════
+let mobCurrentTab = 'edit';
+
+function isMobile() { return window.innerWidth <= 768; }
+
+function mobSetTab(tab) {
+  if (!isMobile()) return;
+  mobCurrentTab = tab;
+
+  // Update tab active state
+  document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'));
+  const activeBtn = document.getElementById('mtab-' + tab);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  const editorArea    = document.getElementById('editor-area');
+  const previewWrapper = document.getElementById('preview-wrapper');
+  const sidebar       = document.getElementById('sidebar');
+  const overlay       = document.getElementById('mob-overlay');
+
+  // Reset all panels
+  editorArea.classList.remove('mob-active');
+  previewWrapper.classList.remove('mob-active');
+  sidebar.classList.remove('mob-open');
+  overlay.classList.remove('show');
+
+  if (tab === 'edit') {
+    editorArea.classList.add('mob-active');
+    currentView = 'split'; // so autoSave triggers renderCV
+  } else if (tab === 'menu') {
+    // Slide in sidebar
+    sidebar.classList.add('mob-open');
+    overlay.classList.add('show');
+    editorArea.classList.add('mob-active'); // keep editor behind
+  } else if (tab === 'preview') {
+    previewWrapper.classList.add('mob-active');
+    currentView = 'preview';
+    renderCV();
+  }
+}
+
+function closeMobSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('mob-overlay');
+  sidebar.classList.remove('mob-open');
+  overlay.classList.remove('show');
+  // Return to edit tab
+  document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'));
+  const editTab = document.getElementById('mtab-edit');
+  if (editTab) editTab.classList.add('active');
+  mobCurrentTab = 'edit';
+}
+
+function mobInitLayout() {
+  if (!isMobile()) return;
+
+  const editorArea     = document.getElementById('editor-area');
+  const previewWrapper = document.getElementById('preview-wrapper');
+  const sidebar        = document.getElementById('sidebar');
+
+  // On mobile: start with editor visible
+  editorArea.classList.add('mob-active');
+  currentView = 'split';
+
+  // Sidebar starts closed
+  sidebar.classList.remove('mob-open');
+}
+
+// On nav-tab click in sidebar: close sidebar after selection on mobile
+document.addEventListener('click', function(e) {
+  const navTab = e.target.closest('.nav-tab');
+  if (navTab && isMobile()) {
+    setTimeout(closeMobSidebar, 180); // slight delay so panel switches first
+  }
+});
+
+// Handle resize: reset mobile state if going to desktop
+window.addEventListener('resize', function() {
+  if (!isMobile()) {
+    // Restore desktop layout
+    const sidebar        = document.getElementById('sidebar');
+    const editorArea     = document.getElementById('editor-area');
+    const previewWrapper = document.getElementById('preview-wrapper');
+    const overlay        = document.getElementById('mob-overlay');
+    sidebar.style.transform = '';
+    sidebar.classList.remove('mob-open');
+    editorArea.classList.remove('mob-active');
+    previewWrapper.classList.remove('mob-active');
+    if (overlay) overlay.classList.remove('show');
+    setView('split');
+  } else {
+    mobInitLayout();
+  }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   loadData();
   populateForm();
   renderCV();
   attachListeners();
-  setView('split');
+  if (isMobile()) {
+    mobInitLayout();
+  } else {
+    setView('split');
+  }
   // Show WA bubble in preview after 3s
   setTimeout(() => {
     const b = document.getElementById('wa-bubble');
@@ -1902,6 +2554,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // Close modal on overlay click
 document.getElementById('github-modal').addEventListener('click', function(e) {
   if (e.target === this) closeGithubModal();
+});
+document.getElementById('seo-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeSeoModal();
 });
 </script>
 </body>
