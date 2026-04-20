@@ -47,16 +47,23 @@ body {
 /* ── GITHUB ALERT BAR ── */
 #github-alert {
   background: linear-gradient(90deg, #1a0a30, #2e0f56, #1a0a30);
-  border-bottom: 2px solid var(--pri);
-  padding: 10px 20px;
+  border: 1px solid var(--pri);
+  border-radius: 12px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 12.5px;
+  gap: 10px;
+  font-size: 12px;
   color: #d4baff;
-  position: relative;
-  z-index: 100;
-  flex-shrink: 0;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 888;
+  box-shadow: 0 4px 24px rgba(116,20,204,0.4);
+  max-width: 680px;
+  width: calc(100% - 40px);
+  backdrop-filter: blur(8px);
 }
 #github-alert .alert-icon { font-size: 16px; flex-shrink: 0; }
 #github-alert strong { color: #fff; }
@@ -1091,7 +1098,12 @@ let currentView = 'edit';
 function setView(v) {
   currentView = v;
   document.querySelectorAll('.vtab').forEach(t => t.classList.remove('active'));
-  event.target.classList.add('active');
+  // Mark the clicked tab active (works both from onclick and programmatic call)
+  document.querySelectorAll('.vtab').forEach(t => {
+    if (t.textContent.includes(v === 'edit' ? 'Editor' : v === 'split' ? 'Split' : 'Preview')) {
+      t.classList.add('active');
+    }
+  });
 
   const sidebar = document.getElementById('sidebar');
   const editorArea = document.getElementById('editor-area');
@@ -1114,11 +1126,14 @@ function setView(v) {
   }
 }
 
-function showPanel(name) {
+function showPanel(name, triggerEl) {
   document.querySelectorAll('.section-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('panel-' + name).classList.add('active');
-  event.currentTarget.classList.add('active');
+  const panel = document.getElementById('panel-' + name);
+  if (panel) panel.classList.add('active');
+  // Mark the nav tab active — use triggerEl if passed, else try event
+  const tab = triggerEl || (typeof event !== 'undefined' && event.currentTarget);
+  if (tab) tab.classList.add('active');
 }
 
 // ══════════════════════════════════════
@@ -1224,13 +1239,13 @@ function renderExperienceList() {
         </div>
       </div>
       <div class="form-grid">
-        <div class="field"><label>Rol / Cargo</label><input type="text" value="${esc(exp.role)}" oninput="DATA.experience[${i}].role=this.value;autoSave()"></div>
-        <div class="field"><label>Empresa</label><input type="text" value="${esc(exp.company)}" oninput="DATA.experience[${i}].company=this.value;autoSave()"></div>
-        <div class="field"><label>Período</label><input type="text" value="${esc(exp.date)}" oninput="DATA.experience[${i}].date=this.value;autoSave()"></div>
-        <div class="field"><label>Logo (URL clearbit.com/logo)</label><input type="text" value="${esc(exp.logo)}" oninput="DATA.experience[${i}].logo=this.value;autoSave()"></div>
+        <div class="field"><label>Rol / Cargo</label><input type="text" value="${esc(exp.role)}" oninput="DATA.experience[${i}].role=this.value;saveData();liveRender()"></div>
+        <div class="field"><label>Empresa</label><input type="text" value="${esc(exp.company)}" oninput="DATA.experience[${i}].company=this.value;saveData();liveRender()"></div>
+        <div class="field"><label>Período</label><input type="text" value="${esc(exp.date)}" oninput="DATA.experience[${i}].date=this.value;saveData();liveRender()"></div>
+        <div class="field"><label>Logo (URL clearbit.com/logo)</label><input type="text" value="${esc(exp.logo)}" oninput="DATA.experience[${i}].logo=this.value;saveData();liveRender()"></div>
       </div>
-      <div class="field" style="margin-top:10px;"><label>Descripción breve</label><textarea oninput="DATA.experience[${i}].desc=this.value;autoSave()">${esc(exp.desc)}</textarea></div>
-      <div class="field" style="margin-top:10px;"><label>Bullets (uno por línea)</label><textarea rows="5" oninput="DATA.experience[${i}].bullets=this.value.split('\\n').filter(l=>l.trim());autoSave()">${(exp.bullets||[]).join('\n')}</textarea></div>
+      <div class="field" style="margin-top:10px;"><label>Descripción breve</label><textarea oninput="DATA.experience[${i}].desc=this.value;saveData();liveRender()">${esc(exp.desc)}</textarea></div>
+      <div class="field" style="margin-top:10px;"><label>Bullets (uno por línea)</label><textarea rows="5" oninput="DATA.experience[${i}].bullets=this.value.split('\\n').filter(l=>l.trim());saveData();liveRender()">${(exp.bullets||[]).join('\n')}</textarea></div>
       <div class="field" style="margin-top:10px;">
         <label>Tags</label>
         <div class="tags-editor" id="exp-tags-${i}">${renderMiniTags(exp.tags||[], i)}</div>
@@ -1243,6 +1258,7 @@ function renderExperienceList() {
     list.appendChild(card);
   });
   updateBadges();
+  attachListeners();
 }
 
 function renderMiniTags(tags, expIdx) {
@@ -1257,20 +1273,23 @@ function addExpTag(i) {
   DATA.experience[i].tags.push(val);
   input.value = '';
   renderExperienceList();
-  autoSave();
+  saveData();
+  liveRender();
 }
 
 function removeExpTag(expIdx, tagIdx) {
   DATA.experience[expIdx].tags.splice(tagIdx, 1);
   renderExperienceList();
-  autoSave();
+  saveData();
+  liveRender();
 }
 
 function addExperience() {
   const newId = Date.now();
   DATA.experience.unshift({ id: newId, role: '', company: '', date: '', logo: '', desc: '', bullets: [], tags: [] });
   renderExperienceList();
-  autoSave();
+  saveData();
+  liveRender();
 }
 
 // ══════════════════════════════════════
@@ -1292,20 +1311,22 @@ function renderEducationList() {
         </div>
       </div>
       <div class="form-grid">
-        <div class="field"><label>Institución</label><input type="text" value="${esc(edu.institution)}" oninput="DATA.education[${i}].institution=this.value;autoSave()"></div>
-        <div class="field"><label>Carrera / Título</label><input type="text" value="${esc(edu.degree)}" oninput="DATA.education[${i}].degree=this.value;autoSave()"></div>
-        <div class="field"><label>Año / Período</label><input type="text" value="${esc(edu.year)}" oninput="DATA.education[${i}].year=this.value;autoSave()"></div>
+        <div class="field"><label>Institución</label><input type="text" value="${esc(edu.institution)}" oninput="DATA.education[${i}].institution=this.value;saveData();liveRender()"></div>
+        <div class="field"><label>Carrera / Título</label><input type="text" value="${esc(edu.degree)}" oninput="DATA.education[${i}].degree=this.value;saveData();liveRender()"></div>
+        <div class="field"><label>Año / Período</label><input type="text" value="${esc(edu.year)}" oninput="DATA.education[${i}].year=this.value;saveData();liveRender()"></div>
       </div>
     `;
     list.appendChild(card);
   });
   updateBadges();
+  attachListeners();
 }
 
 function addEducation() {
   DATA.education.unshift({ id: Date.now(), institution: '', degree: '', year: '' });
   renderEducationList();
-  autoSave();
+  saveData();
+  liveRender();
 }
 
 // ══════════════════════════════════════
@@ -1327,22 +1348,24 @@ function renderCertificationsList() {
         </div>
       </div>
       <div class="form-grid">
-        <div class="field"><label>Nombre del certificado</label><input type="text" value="${esc(cert.name)}" oninput="DATA.certifications[${i}].name=this.value;autoSave()"></div>
-        <div class="field"><label>Institución / Plataforma</label><input type="text" value="${esc(cert.institution)}" oninput="DATA.certifications[${i}].institution=this.value;autoSave()"></div>
-        <div class="field"><label>Año</label><input type="text" value="${esc(cert.year)}" oninput="DATA.certifications[${i}].year=this.value;autoSave()"></div>
-        <div class="field"><label>Link (opcional)</label><input type="text" value="${esc(cert.link)}" oninput="DATA.certifications[${i}].link=this.value;autoSave()"></div>
+        <div class="field"><label>Nombre del certificado</label><input type="text" value="${esc(cert.name)}" oninput="DATA.certifications[${i}].name=this.value;saveData();liveRender()"></div>
+        <div class="field"><label>Institución / Plataforma</label><input type="text" value="${esc(cert.institution)}" oninput="DATA.certifications[${i}].institution=this.value;saveData();liveRender()"></div>
+        <div class="field"><label>Año</label><input type="text" value="${esc(cert.year)}" oninput="DATA.certifications[${i}].year=this.value;saveData();liveRender()"></div>
+        <div class="field"><label>Link (opcional)</label><input type="text" value="${esc(cert.link)}" oninput="DATA.certifications[${i}].link=this.value;saveData();liveRender()"></div>
       </div>
     `;
     list.appendChild(card);
   });
   updateBadges();
+  attachListeners();
 }
 
 function addCertification() {
   if (!DATA.certifications) DATA.certifications = [];
   DATA.certifications.unshift({ id: Date.now(), name: '', institution: '', year: '', link: '' });
   renderCertificationsList();
-  autoSave();
+  saveData();
+  liveRender();
 }
 
 // ══════════════════════════════════════
@@ -1354,7 +1377,8 @@ function deleteItem(section, idx) {
   if (section === 'experience') renderExperienceList();
   if (section === 'education') renderEducationList();
   if (section === 'certifications') renderCertificationsList();
-  autoSave();
+  saveData();
+  liveRender();
 }
 
 function moveItem(section, idx, dir) {
@@ -1365,7 +1389,8 @@ function moveItem(section, idx, dir) {
   if (section === 'experience') renderExperienceList();
   if (section === 'education') renderEducationList();
   if (section === 'certifications') renderCertificationsList();
-  autoSave();
+  saveData();
+  liveRender();
 }
 
 // ══════════════════════════════════════
@@ -1380,9 +1405,6 @@ function renderTagsEditor(type, tags) {
 }
 
 function addTag(type) {
-  const input = document.getElementById(type.replace('s','') + '-input') ||
-                document.getElementById(type + '-input') ||
-                document.getElementById('lang-input');
   let realInput;
   if (type === 'skills') realInput = document.getElementById('skill-input');
   else if (type === 'tools') realInput = document.getElementById('tool-input');
@@ -1394,13 +1416,15 @@ function addTag(type) {
   DATA[type].push(val);
   realInput.value = '';
   renderTagsEditor(type, DATA[type]);
-  autoSave();
+  saveData();
+  liveRender();
 }
 
 function removeTag(type, idx) {
   DATA[type].splice(idx, 1);
   renderTagsEditor(type, DATA[type]);
-  autoSave();
+  saveData();
+  liveRender();
 }
 
 function updateBadges() {
@@ -1415,17 +1439,26 @@ function updateBadges() {
 let saveTimer;
 function autoSave() {
   collectFormData();
+  liveRender(); // immediate visual update — no waiting
   clearTimeout(saveTimer);
   saveTimer = setTimeout(() => {
-    saveData();
-    if (currentView === 'split' || currentView === 'preview') renderCV();
-  }, 400);
+    saveData(); // persist to localStorage after short debounce
+  }, 300);
 }
 
-// Attach listeners to all form inputs
+// Always render if split or preview
+function liveRender() {
+  if (currentView === 'split' || currentView === 'preview') renderCV();
+}
+
+// Attach listeners to all form inputs — called once on init AND after any dynamic list re-render
 function attachListeners() {
-  document.querySelectorAll('#editor-area input, #editor-area textarea').forEach(el => {
-    el.addEventListener('input', autoSave);
+  document.querySelectorAll('#editor-area input, #editor-area textarea, #editor-area select').forEach(el => {
+    if (!el.dataset.lsn) {
+      el.dataset.lsn = '1';
+      el.addEventListener('input', autoSave);
+      el.addEventListener('change', autoSave);
+    }
   });
 }
 
@@ -1561,6 +1594,8 @@ function esc(str) {
 // ══════════════════════════════════════
 function applyColors() {
   collectFormData();
+  const set = DATA.settings || {};
+  if (set.colorPri) document.documentElement.style.setProperty('--pri', set.colorPri);
   saveData();
   renderCV();
 }
@@ -1854,12 +1889,9 @@ function closeWA() {
 document.addEventListener('DOMContentLoaded', () => {
   loadData();
   populateForm();
-  // Start with split view so they see the preview immediately
-  setView('split');
-  document.querySelector('.vtab:nth-child(2)').classList.add('active');
-  document.querySelector('.vtab:first-child').classList.remove('active');
   renderCV();
   attachListeners();
+  setView('split');
   // Show WA bubble in preview after 3s
   setTimeout(() => {
     const b = document.getElementById('wa-bubble');
